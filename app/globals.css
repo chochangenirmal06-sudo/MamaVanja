@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── BRAND TOKENS ──────────────────────────────────────────────── */
+:root {
+  --brand-green:       #1A7A5E;
+  --brand-dark-green:  #0F3D2E;
+  --brand-teal:        #B8D4D8;
+  --brand-lavender:    #DDD0DC;
+  --brand-cream:       #F5F2ED;
+
+  /* Animation timing — single source of truth */
+  --t-type:        45ms;
+  --t-backspace:   22ms;
+  --t-fade:        400ms;
+  --t-hold:        2750ms;
+  --t-type-pause:  300ms;
+  --t-crossfade:   400ms;
+}
+
+/*
+  Fonts are loaded via next/font/google in lib/fonts.ts.
+  CSS variables --font-display, --font-sans, --font-mono are injected
+  onto <html> by layout.tsx.
+*/
+
+/* ── BASE ──────────────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-mono), 'Courier New', monospace;
+  background-color: var(--brand-cream);
+  color: var(--brand-dark-green);
+  min-height: 100vh;
+}
+
+/* ── H1 BOLD-PHRASE UNDERLINES ─────────────────────────────────── */
+h1 strong {
+  text-decoration: underline;
+  text-decoration-color: var(--brand-green);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+  text-decoration-skip-ink: auto;
+}
+
+/* ── BUTTON COMPONENTS ─────────────────────────────────────────── */
+@layer components {
+  .btn {
+    @apply inline-flex items-center font-mono text-[0.8rem] font-medium
+           leading-none rounded-lg cursor-pointer no-underline whitespace-nowrap
+           transition-opacity duration-150;
+    padding: 0.65rem 1.25rem;
+    border: 1.5px solid transparent;
+  }
+  .btn--outline {
+    background: transparent;
+    border-color: var(--brand-green);
+    color: var(--brand-green);
+  }
+  .btn--outline:hover {
+    background: color-mix(in srgb, var(--brand-green) 8%, transparent);
+  }
+  .btn--primary {
+    background: var(--brand-green);
+    border-color: var(--brand-green);
+    color: var(--brand-cream);
+  }
+  .btn--primary:hover { opacity: 0.87; }
+}
+
+/* ── HERO ENTRANCE (CSS — avoids Framer Motion SSR opacity:0 bake-in) ── */
+@keyframes hero-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes hero-fade-up-scale {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+.hero-item {
+  animation: hero-fade-up 0.5s ease-out both;
+}
+.hero-item:nth-child(1) { animation-delay: 0ms;   }
+.hero-item:nth-child(2) { animation-delay: 150ms; }
+.hero-item:nth-child(3) { animation-delay: 300ms; }
+.hero-item:nth-child(4) { animation-delay: 450ms; }
+.hero-demo {
+  animation: hero-fade-up-scale 0.5s ease-out both;
+  animation-delay: 300ms;
+}
+
+/* ── CURSOR BLINK ──────────────────────────────────────────────── */
+@keyframes blink { 50% { opacity: 0; } }
+.cursor-blink { animation: blink 0.7s step-end infinite; }
+
+/* ── DEMO CARD STATE MACHINE ───────────────────────────────────── */
+/* Grid overlay — both acts share the same cell */
+.demo-card {
+  display: grid;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(15,61,46,0.06),
+    0 4px 24px rgba(15,61,46,0.10),
+    0 16px 48px rgba(15,61,46,0.07);
+  background: var(--brand-cream);
+  transition: background var(--t-crossfade) ease;
+}
+.demo-card.is-dark { background: #141414; }
+
+.act {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.act-1 { opacity: 1; transition: opacity var(--t-crossfade) ease; }
+.act-2 { opacity: 0; pointer-events: none; transition: opacity var(--t-crossfade) ease; }
+
+.demo-card.is-dark .act-1 { opacity: 0; pointer-events: none; }
+.demo-card.is-dark .act-2 { opacity: 1; pointer-events: auto; }
+
+/* ── BADGE TICKER ──────────────────────────────────────────────── */
+/*
+  --set-w is the exact pixel distance from the start of set N to the
+  start of set N+1 in a flat flex row: badge_count × (badge_px + gap_px).
+  Using a pixel value (not %) avoids the flex-gap rounding error that
+  percent-based translateX produces, keeping the loop perfectly seamless.
+  Mobile: 5 × (96 + 52) = 740px  |  Desktop sm+: 5 × (126 + 52) = 890px
+*/
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(-1 * var(--set-w, 890px))); }
+}
+.ticker-track {
+  --set-w: 740px;
+  animation: ticker 33s linear infinite;
+}
+@media (min-width: 640px) {
+  .ticker-track {
+    --set-w: 890px;
+    animation-duration: 40s;
+  }
+}
+.ticker-wrapper:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+/* ── REDUCED MOTION ────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .hero-item, .hero-demo { animation: none; }
+  .demo-card, .act { transition: none !important; }
+  .act-2 { display: none; }
+  .act-1 { opacity: 1 !important; pointer-events: auto !important; }
+  .cursor-blink { animation: none; opacity: 1; }
+  .ticker-track { animation: none; }
+}
