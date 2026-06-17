@@ -1,4 +1,3 @@
-import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -13,6 +12,7 @@ function escapeHtml(str: string): string {
 
 export async function POST(request: Request) {
   try {
+    const { Resend } = await import('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
     const body = await request.json();
     const { fullName, email, companyName, websiteUrl } = body as {
