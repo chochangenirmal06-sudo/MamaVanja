@@ -22,7 +22,7 @@ export function Hero() {
         >
           Get a steady stream of <strong>qualified leads</strong> who are already
           in buying mode by ranking in the{' '}
-          <strong>Top&nbsp;3 on Google &amp; AI&nbsp;Search</strong> within{' '}
+          <strong>Top&nbsp;3 on Google</strong> within{' '}
           <strong>90&nbsp;Days</strong> or we{' '}
           <strong>Work&nbsp;for&nbsp;Free</strong> until you do.
         </h1>

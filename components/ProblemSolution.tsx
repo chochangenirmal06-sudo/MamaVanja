@@ -316,7 +316,7 @@ function Block3({ rm }: { rm: RM }) {
           <BodyText>
             <p>At MamaVanja, we help local businesses get found when customers are actively searching for their services.</p>
             <p>No cold calling. No chasing referrals. No constantly pouring money into ads.</p>
-            <p>We create custom SEO strategy that helps your business <Kicker>rank in the Top 3 on Google &amp; AI Search</Kicker> so the right customers find you first.</p>
+            <p>We create custom SEO strategy that helps your business <Kicker>rank in the Top 3 on Google</Kicker> so the right customers find you first.</p>
             <p>And if we don&apos;t get you there within 90 days, <Kicker>we&apos;ll keep working for free until we do</Kicker>.</p>
           </BodyText>
         </motion.div>
@@ -370,8 +370,8 @@ function Block4({ rm }: { rm: RM }) {
             <p>
               Book a free{' '}
               <strong style={{ fontWeight: 700, textDecoration: 'underline', textDecorationColor: 'var(--brand-green)', textDecorationThickness: '2px', textUnderlineOffset: '6px', textDecorationSkipInk: 'auto' }}>30-minute call</strong>
-              {' '}and we&apos;ll show you exactly why competitors are outranking you and where you&apos;re losing leads in{' '}
-              <strong style={{ fontWeight: 700, textDecoration: 'underline', textDecorationColor: 'var(--brand-green)', textDecorationThickness: '2px', textUnderlineOffset: '6px', textDecorationSkipInk: 'auto' }}>Google and AI search results</strong>.
+              {' '}and we&apos;ll show you exactly why competitors are outranking you and where you&apos;re losing leads on{' '}
+              <strong style={{ fontWeight: 700, textDecoration: 'underline', textDecorationColor: 'var(--brand-green)', textDecorationThickness: '2px', textUnderlineOffset: '6px', textDecorationSkipInk: 'auto' }}>Google</strong>.
             </p>
             <p>
               If it looks like a good fit, we&apos;ll walk you through how our SEO program works and what it would take to get you{' '}

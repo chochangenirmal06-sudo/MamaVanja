@@ -4,31 +4,24 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 /* ── TIMING CONSTANTS (mirrors CSS vars — retune here) ─────────── */
-const TYPE_SPEED         = 45;    // ms per char typed
-const BACKSPACE_SPEED    = 22;    // ms per char erased
-const FADE_DURATION      = 400;   // ms — results panel fade
-const HOLD_DURATION      = 2750;  // ms — fully-revealed pause
-const TYPE_PAUSE         = 300;   // ms — gap before showing results
-const CROSSFADE_DURATION = 400;   // ms — light ↔ dark transition
+const TYPE_SPEED      = 45;    // ms per char typed
+const BACKSPACE_SPEED = 22;    // ms per char erased
+const FADE_DURATION   = 400;   // ms — results panel fade
+const HOLD_DURATION   = 4500;  // ms — fully-revealed pause
+const TYPE_PAUSE      = 300;   // ms — gap before showing results
 
 const ACT1_QUERY = 'roof repair in bradford';
-const ACT2_QUERY = 'hey chatgpt, find the best roof repair in bradford';
 
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
 
 export function SearchDemo() {
   const prefersReducedMotion = useReducedMotion();
 
-  const [isDark,         setIsDark]         = useState(false);
   const [act1Text,       setAct1Text]       = useState('');
-  const [act2Text,       setAct2Text]       = useState('');
   const [mappackVisible, setMappackVisible] = useState(false);
-  const [aiVisible,      setAiVisible]      = useState(false);
   const [showAct1Cursor, setShowAct1Cursor] = useState(true);
-  const [showAct2Cursor, setShowAct2Cursor] = useState(false);
 
   const act1Ref    = useRef('');
-  const act2Ref    = useRef('');
   /*
     Generation counter instead of a boolean cancel flag.
     Problem with the old boolean: the second useEffect invocation (React
@@ -86,16 +79,10 @@ export function SearchDemo() {
 
     async function runLoop() {
       while (alive()) {
-        /* ── ACT 1: Light / Google ── */
-        setIsDark(false);
         act1Ref.current = '';
-        act2Ref.current = '';
         setAct1Text('');
-        setAct2Text('');
         setShowAct1Cursor(true);
-        setShowAct2Cursor(false);
         setMappackVisible(false);
-        setAiVisible(false);
 
         await typeIn(setAct1Text, act1Ref, ACT1_QUERY, TYPE_SPEED);
         if (!alive()) return;
@@ -109,37 +96,10 @@ export function SearchDemo() {
         if (!alive()) return;
         await eraseAll(setAct1Text, act1Ref, BACKSPACE_SPEED);
         if (!alive()) return;
-
-        /* ── Crossfade → Act 2: Dark / ChatGPT ── */
-        setShowAct1Cursor(false);
-        setShowAct2Cursor(true);
-        setIsDark(true);
-        await sleep(CROSSFADE_DURATION);
-        if (!alive()) return;
-
-        await typeIn(setAct2Text, act2Ref, ACT2_QUERY, TYPE_SPEED);
-        if (!alive()) return;
-        await sleep(TYPE_PAUSE);
-        if (!alive()) return;
-        setAiVisible(true);
-        await sleep(HOLD_DURATION);
-        if (!alive()) return;
-        setAiVisible(false);
-        await sleep(FADE_DURATION);
-        if (!alive()) return;
-        await eraseAll(setAct2Text, act2Ref, BACKSPACE_SPEED);
-        if (!alive()) return;
-
-        /* ── Crossfade → Act 1 ── */
-        setShowAct2Cursor(false);
-        setIsDark(false);
-        await sleep(CROSSFADE_DURATION);
       }
     }
 
     runLoop();
-    // Increment generation → all pending async steps from this invocation
-    // see a stale gen and exit, stopping the loop cleanly.
     return () => { loopGenRef.current++; };
   }, []);
 
@@ -148,16 +108,14 @@ export function SearchDemo() {
   return (
     <div
       role="img"
-      aria-label="Dual-search animation showing Bradford Roofing Co. ranking #1 on Google and being recommended first by ChatGPT"
+      aria-label="Search animation showing Bradford Roofing Co. ranking #1 on Google"
     >
       <p className="sr-only">
-        This animation cycles between two search scenarios. First: a Google search bar types
-        &ldquo;roof repair in bradford&rdquo; and a map pack appears showing Bradford Roofing Co. ranked #1
-        with a 4.9-star rating. Second: a ChatGPT prompt types &ldquo;find the best roof repair in
-        bradford&rdquo; and an AI response lists Bradford Roofing Co. as the top recommendation.
+        This animation shows a Google search bar typing &ldquo;roof repair in bradford&rdquo;
+        and a map pack appearing with Bradford Roofing Co. ranked #1 with a 4.9-star rating.
       </p>
 
-      <div className={`demo-card${isDark ? ' is-dark' : ''}`} aria-hidden="true">
+      <div className="demo-card" aria-hidden="true">
 
         {/* ── ACT 1: LIGHT / GOOGLE ───────────────────────────── */}
         <div className="act act-1">
@@ -203,8 +161,8 @@ export function SearchDemo() {
             {/*
               Fixed-height panel area — height never changes regardless of
               whether the map pack is visible or not, so nothing below this
-              component shifts. Both panels live permanently in the DOM and
-              are shown/hidden via opacity only (no mount/unmount).
+              component shifts. The panel lives permanently in the DOM and
+              is shown/hidden via opacity only (no mount/unmount).
             */}
             <div style={{ position: 'relative', minHeight: 230 }}>
               <motion.div
@@ -266,73 +224,6 @@ export function SearchDemo() {
           </div>
         </div>
 
-        {/* ── ACT 2: DARK / CHATGPT ───────────────────────────── */}
-        <div className="act act-2">
-          <div className="px-4 pt-3.5 pb-1 text-[0.78rem] font-medium text-left tracking-wide shrink-0" style={{ color: 'rgba(255,255,255,0.72)' }}>
-            ChatGPT<span className="text-[0.6rem] ml-1 opacity-50">▾</span>
-          </div>
-
-          {/* Fixed-height panel area mirrors act-1's dimensions */}
-          <div style={{ position: 'relative', minHeight: 230 }}>
-            <motion.div
-              style={{
-                position: 'absolute',
-                top: 6, right: 14, bottom: 4, left: 14,
-                pointerEvents: aiVisible ? 'auto' : 'none',
-              }}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: aiVisible ? 1 : 0, y: aiVisible ? 0 : 6 }}
-              transition={panelTransition}
-            >
-              <div
-                className="rounded-xl p-3"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
-              >
-                <p className="text-[0.68rem] mb-2 leading-[1.45]" style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'left' }}>
-                  Here are the best roofers in Bradford I&apos;d recommend:
-                </p>
-                <AiItem num="1" winner reason="Top-rated local roofer: 4.9★ across 87 reviews, fast response &amp; fully insured.">
-                  Bradford Roofing Co.
-                </AiItem>
-                <AiItem num="2" reason="Good reputation, fewer reviews than the top pick.">
-                  Yorkshire Roof Specialists
-                </AiItem>
-                <AiItem num="3" reason="Solid option, best for smaller repair jobs." last>
-                  BD Roofers Ltd.
-                </AiItem>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="px-3.5 pb-3.5 pt-1.5 shrink-0">
-            <div
-              className="flex items-center gap-2 rounded-full px-3 py-2"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.13)' }}
-            >
-              <div
-                className="w-[22px] h-[22px] rounded-full flex items-center justify-center text-[1.05rem] shrink-0"
-                style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)' }}
-                aria-hidden="true"
-              >
-                +
-              </div>
-              <div className="flex-1 text-left font-mono text-[0.78rem] min-h-[1em]" style={{ color: 'rgba(255,255,255,0.82)' }}>
-                {act2Text}
-                {showAct2Cursor && (
-                  <span
-                    className="inline-block w-[1.5px] h-[0.9em] align-bottom rounded-sm cursor-blink"
-                    style={{ background: 'rgba(255,255,255,0.75)' }}
-                  />
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0" style={{ color: 'rgba(255,255,255,0.5)' }} aria-hidden="true">
-                <MicIcon />
-                <Soundwave />
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
   );
@@ -387,64 +278,6 @@ function ResultRow({ winner, children }: { winner?: boolean; children: React.Rea
       }}
     >
       {children}
-    </div>
-  );
-}
-
-function AiItem({
-  num, winner, reason, last, children,
-}: {
-  num: string;
-  winner?: boolean;
-  reason: string;
-  last?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className="flex gap-1.5 py-1.5 text-left"
-      style={{ borderBottom: last ? 'none' : '1px solid rgba(255,255,255,0.05)' }}
-    >
-      <span className="text-[0.63rem] shrink-0 pt-[0.1em] min-w-[1rem]" style={{ color: 'rgba(255,255,255,0.3)' }}>
-        {num}.
-      </span>
-      <div className="flex-1">
-        <div
-          className="flex items-center gap-1.5 text-[0.72rem] font-semibold mb-[0.12rem]"
-          style={{ color: winner ? '#fff' : 'rgba(255,255,255,0.38)' }}
-        >
-          {winner && (
-            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'var(--brand-green)' }} />
-          )}
-          {children}
-        </div>
-        <div
-          className="text-[0.61rem] leading-[1.4]"
-          style={{ color: winner ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.3)' }}
-          dangerouslySetInnerHTML={{ __html: reason }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function MicIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-      <rect x="4.25" y="1" width="5.5" height="7.5" rx="2.75" fill="currentColor" opacity="0.65"/>
-      <path d="M2 7.5a5 5 0 0010 0" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" fill="none" opacity="0.65"/>
-      <line x1="7" y1="12.5" x2="7" y2="10.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" opacity="0.65"/>
-    </svg>
-  );
-}
-
-function Soundwave() {
-  const heights = [3, 7, 11, 6, 3];
-  return (
-    <div className="flex items-center gap-[1.5px]" style={{ height: 12 }} aria-hidden="true">
-      {heights.map((h, i) => (
-        <div key={i} className="w-[2px] rounded-sm" style={{ height: h, background: 'rgba(255,255,255,0.38)' }} />
-      ))}
     </div>
   );
 }

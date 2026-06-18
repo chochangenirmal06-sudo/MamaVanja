@@ -50,8 +50,8 @@ export default function BookACall() {
             Book a free{' '}
             <strong style={kickerStyle}>30-minute call</strong>
             {' '}and we&apos;ll show you exactly why competitors are outranking you and where
-            you&apos;re losing leads in{' '}
-            <strong style={kickerStyle}>Google and AI search results</strong>.
+            you&apos;re losing leads on{' '}
+            <strong style={kickerStyle}>Google</strong>.
           </p>
           <p>
             If it looks like a good fit, we&apos;ll walk you through how our SEO program works and
