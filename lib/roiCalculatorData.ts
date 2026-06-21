@@ -20,7 +20,7 @@ export type TradeKey =
   | 'cleaning'
   | 'painter';
 
-export type AreaSizeKey = 'small' | 'mid' | 'large';
+export type AreaSizeKey = 'small' | 'medium' | 'large' | 'major';
 
 export interface TradeProfile {
   label: string;
@@ -30,6 +30,15 @@ export interface TradeProfile {
   avgJobValue: number;
   /** Pre-filled close rate (% of calls that become paid jobs), adjustable via slider. */
   closeRatePct: number;
+  /**
+   * Pre-filled NET profit margin (%) — what's left after labor, materials,
+   * and overhead, adjustable via slider. Sourced from industry benchmarks
+   * (ServiceM8, ContractorInCharge, HousecallPro field-service benchmarking,
+   * 2024 ACCA Financial Benchmarking Study) and deliberately set toward the
+   * middle/conservative end of each trade's typical range rather than
+   * top-quartile or vendor-marketing figures.
+   */
+  profitMarginPct: number;
   /**
    * A realistic ceiling on jobs ONE typical small/solo-to-small-crew business
    * in this trade can actually complete in a month. Without this, high search
@@ -43,21 +52,21 @@ export interface TradeProfile {
 }
 
 export const TRADES: Record<TradeKey, TradeProfile> = {
-  plumber:      { label: 'Plumbing',          baseMonthlySearches: 880, avgJobValue: 350,  closeRatePct: 38, maxMonthlyJobs: 60 },
-  electrician:  { label: 'Electrical',        baseMonthlySearches: 720, avgJobValue: 400,  closeRatePct: 35, maxMonthlyJobs: 55 },
-  hvac:         { label: 'HVAC / Heating & Cooling', baseMonthlySearches: 1100, avgJobValue: 550, closeRatePct: 32, maxMonthlyJobs: 45 },
+  plumber:      { label: 'Plumbing',          baseMonthlySearches: 880, avgJobValue: 350,  closeRatePct: 38, profitMarginPct: 12, maxMonthlyJobs: 60 },
+  electrician:  { label: 'Electrical',        baseMonthlySearches: 720, avgJobValue: 400,  closeRatePct: 35, profitMarginPct: 11, maxMonthlyJobs: 55 },
+  hvac:         { label: 'HVAC / Heating & Cooling', baseMonthlySearches: 1100, avgJobValue: 550, closeRatePct: 32, profitMarginPct: 9, maxMonthlyJobs: 45 },
   // Blended average across repairs ($400-1,500) and full replacements (~$11,500) —
   // weighted toward repairs/smaller jobs since those are far higher-volume than
   // full replacements for a typical local roofer's monthly call mix.
   // maxMonthlyJobs is low because full crews can usually only complete a
   // handful of multi-day replacement jobs per month, even mixed with repairs.
-  roofer:       { label: 'Roofing',           baseMonthlySearches: 590, avgJobValue: 2800, closeRatePct: 22, maxMonthlyJobs: 18 },
-  landscaper:   { label: 'Landscaping / Lawn Care', baseMonthlySearches: 640, avgJobValue: 220, closeRatePct: 40, maxMonthlyJobs: 80 },
-  locksmith:    { label: 'Locksmith',         baseMonthlySearches: 480, avgJobValue: 150,  closeRatePct: 45, maxMonthlyJobs: 90 },
-  pest_control: { label: 'Pest Control',      baseMonthlySearches: 560, avgJobValue: 180,  closeRatePct: 42, maxMonthlyJobs: 90 },
-  garage_door:  { label: 'Garage Door Repair',baseMonthlySearches: 390, avgJobValue: 320,  closeRatePct: 36, maxMonthlyJobs: 60 },
-  cleaning:     { label: 'House Cleaning',    baseMonthlySearches: 710, avgJobValue: 160,  closeRatePct: 30, maxMonthlyJobs: 100 },
-  painter:      { label: 'Painting',          baseMonthlySearches: 430, avgJobValue: 650,  closeRatePct: 28, maxMonthlyJobs: 25 },
+  roofer:       { label: 'Roofing',           baseMonthlySearches: 590, avgJobValue: 2800, closeRatePct: 22, profitMarginPct: 15, maxMonthlyJobs: 18 },
+  landscaper:   { label: 'Landscaping / Lawn Care', baseMonthlySearches: 640, avgJobValue: 220, closeRatePct: 40, profitMarginPct: 9, maxMonthlyJobs: 80 },
+  locksmith:    { label: 'Locksmith',         baseMonthlySearches: 480, avgJobValue: 150,  closeRatePct: 45, profitMarginPct: 15, maxMonthlyJobs: 90 },
+  pest_control: { label: 'Pest Control',      baseMonthlySearches: 560, avgJobValue: 180,  closeRatePct: 42, profitMarginPct: 13, maxMonthlyJobs: 90 },
+  garage_door:  { label: 'Garage Door Repair',baseMonthlySearches: 390, avgJobValue: 320,  closeRatePct: 36, profitMarginPct: 12, maxMonthlyJobs: 60 },
+  cleaning:     { label: 'House Cleaning',    baseMonthlySearches: 710, avgJobValue: 160,  closeRatePct: 30, profitMarginPct: 12, maxMonthlyJobs: 100 },
+  painter:      { label: 'Painting',          baseMonthlySearches: 430, avgJobValue: 650,  closeRatePct: 28, profitMarginPct: 14, maxMonthlyJobs: 25 },
 };
 
 export interface AreaProfile {
@@ -68,9 +77,10 @@ export interface AreaProfile {
 }
 
 export const AREA_SIZES: Record<AreaSizeKey, AreaProfile> = {
-  small: { label: 'Small town / suburb',     helper: 'Under ~50,000 people',     searchMultiplier: 0.45 },
-  mid:   { label: 'Mid-sized city',          helper: '~50,000–300,000 people',   searchMultiplier: 1.0  },
-  large: { label: 'Large city / metro area', helper: '300,000+ people',          searchMultiplier: 2.2  },
+  small:  { label: 'Small town',  helper: 'Under 80,000 people',     searchMultiplier: 0.4  },
+  medium: { label: 'Medium city', helper: '80,000–250,000 people',   searchMultiplier: 1.0  },
+  large:  { label: 'Large city',  helper: '250,000–600,000 people',  searchMultiplier: 1.9  },
+  major:  { label: 'Major city',  helper: '600,000+ people',         searchMultiplier: 3.2  },
 };
 
 export type RankingKey = 'top3' | 'page1' | 'page2plus' | 'unsure';
@@ -130,6 +140,7 @@ export interface CalculatorInputs {
   ranking: RankingKey;
   avgJobValue: number;
   closeRatePct: number;
+  profitMarginPct: number;
 }
 
 export interface CalculatorResults {
@@ -140,6 +151,8 @@ export interface CalculatorResults {
   potentialJobsWon: number;
   currentMonthlyRevenue: number;
   potentialMonthlyRevenue: number;
+  currentMonthlyProfit: number;
+  potentialMonthlyProfit: number;
   monthlyOpportunity: number;
   annualOpportunity: number;
 }
@@ -177,7 +190,14 @@ export function calculateROI(inputs: CalculatorInputs): CalculatorResults {
   const currentMonthlyRevenue = currentJobsWon * inputs.avgJobValue;
   const potentialMonthlyRevenue = potentialJobsWon * inputs.avgJobValue;
 
-  const monthlyOpportunity = Math.max(0, potentialMonthlyRevenue - currentMonthlyRevenue);
+  const marginRate = inputs.profitMarginPct / 100;
+  const currentMonthlyProfit = currentMonthlyRevenue * marginRate;
+  const potentialMonthlyProfit = potentialMonthlyRevenue * marginRate;
+
+  // The headline number is PROFIT, not revenue — what the owner actually
+  // keeps, not top-line sales. This is the gap between current and
+  // potential profit, not just revenue.
+  const monthlyOpportunity = Math.max(0, potentialMonthlyProfit - currentMonthlyProfit);
   const annualOpportunity = monthlyOpportunity * 12;
 
   return {
@@ -188,6 +208,8 @@ export function calculateROI(inputs: CalculatorInputs): CalculatorResults {
     potentialJobsWon,
     currentMonthlyRevenue,
     potentialMonthlyRevenue,
+    currentMonthlyProfit,
+    potentialMonthlyProfit,
     monthlyOpportunity,
     annualOpportunity,
   };

@@ -108,10 +108,11 @@ function SliderField({
 
 export function RoiCalculator() {
   const [trade, setTrade] = useState<TradeKey>('plumber');
-  const [areaSize, setAreaSize] = useState<AreaSizeKey>('mid');
+  const [areaSize, setAreaSize] = useState<AreaSizeKey>('medium');
   const [ranking, setRanking] = useState<RankingKey>('page2plus');
   const [avgJobValue, setAvgJobValue] = useState<number>(TRADES.plumber.avgJobValue);
   const [closeRatePct, setCloseRatePct] = useState<number>(TRADES.plumber.closeRatePct);
+  const [profitMarginPct, setProfitMarginPct] = useState<number>(TRADES.plumber.profitMarginPct);
   const [breakdownOpen, setBreakdownOpen] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -121,12 +122,13 @@ export function RoiCalculator() {
     // on a previous trade's numbers — same trick the reference calculator used.
     setAvgJobValue(TRADES[next].avgJobValue);
     setCloseRatePct(TRADES[next].closeRatePct);
+    setProfitMarginPct(TRADES[next].profitMarginPct);
     setHasInteracted(true);
   }
 
   const results = useMemo(
-    () => calculateROI({ trade, areaSize, ranking, avgJobValue, closeRatePct }),
-    [trade, areaSize, ranking, avgJobValue, closeRatePct]
+    () => calculateROI({ trade, areaSize, ranking, avgJobValue, closeRatePct, profitMarginPct }),
+    [trade, areaSize, ranking, avgJobValue, closeRatePct, profitMarginPct]
   );
 
   const rankingEntries = Object.entries(RANKINGS) as [RankingKey, (typeof RANKINGS)[RankingKey]][];
@@ -224,6 +226,7 @@ export function RoiCalculator() {
         </p>
         <p className="font-sans" style={{ fontSize: '0.8125rem', color: 'var(--brand-dark-green)', opacity: 0.55, marginBottom: 14 }}>
           Pre-filled with typical numbers for your trade — drag to adjust if you know your real figures.
+          Profit margin is what&apos;s left after labor, materials, and overhead.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }} className="roi-grid-2">
           <SliderField
@@ -243,6 +246,15 @@ export function RoiCalculator() {
             step={1}
             display={`${closeRatePct}%`}
             onChange={v => { setCloseRatePct(v); setHasInteracted(true); }}
+          />
+          <SliderField
+            label="Net profit margin"
+            value={profitMarginPct}
+            min={3}
+            max={35}
+            step={1}
+            display={`${profitMarginPct}%`}
+            onChange={v => { setProfitMarginPct(v); setHasInteracted(true); }}
           />
         </div>
       </div>
@@ -302,8 +314,9 @@ export function RoiCalculator() {
         </div>
 
         <p className="font-sans" style={{ fontSize: '0.875rem', color: '#fff', opacity: 0.65, lineHeight: 1.6, margin: 0 }}>
-          That&apos;s the estimated revenue gap between where you rank today and ranking in the
-          top 3 for &ldquo;{TRADES[trade].label.toLowerCase()} near me&rdquo; searches in your area.
+          That&apos;s the estimated profit gap between where you rank today and ranking in the
+          top 3 for &ldquo;{TRADES[trade].label.toLowerCase()} near me&rdquo; searches in your area —
+          after labor, materials, and overhead.
         </p>
 
         {/* Secondary stats */}
@@ -370,7 +383,9 @@ export function RoiCalculator() {
             <BreakdownRow label="Your close rate" value={`${closeRatePct}%`} />
             <BreakdownRow label="Jobs won now → at top 3" value={`${results.currentJobsWon} → ${results.potentialJobsWon}`} />
             <BreakdownRow label="Average job value" value={formatCurrency(avgJobValue)} />
-            <BreakdownRow label="Monthly revenue now → at top 3" value={`${formatCurrency(results.currentMonthlyRevenue)} → ${formatCurrency(results.potentialMonthlyRevenue)}`} last />
+            <BreakdownRow label="Monthly revenue now → at top 3" value={`${formatCurrency(results.currentMonthlyRevenue)} → ${formatCurrency(results.potentialMonthlyRevenue)}`} />
+            <BreakdownRow label="Net profit margin" value={`${profitMarginPct}%`} />
+            <BreakdownRow label="Monthly profit now → at top 3" value={`${formatCurrency(results.currentMonthlyProfit)} → ${formatCurrency(results.potentialMonthlyProfit)}`} last />
           </div>
         )}
       </div>
